@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="СТО.AI">
+<meta name="theme-color" content="#0a0c10">
+<title>СТО.AI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Unbounded:wght@700;900&display=swap');
+
+:root {
+  --bg: #0a0c10;
+  --s1: #13161d;
+  --s2: #1c2030;
+  --bd: #2a2f3d;
+  --ac: #00e5ff;
+  --ac2: #ff6b35;
+  --gr: #00ff88;
+  --rd: #ff3b5c;
+  --yw: #ffd60a;
+  --tx: #e8eaf0;
+  --tx2: #8a90a0;
+  --r: 12px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg); color: var(--tx);
+  display: flex; flex-direction: column;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bot);
+}
+
+/* HEADER */
+.hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: var(--s1);
+  border-bottom: 1px solid var(--bd); flex-shrink: 0;
+}
+.logo { font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 900; color: var(--ac); }
+.logo span { color: var(--ac2); }
+.hdr-right { display: flex; align-items: center; gap: 10px; }
+.narid { font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 900; }
+.badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+.badge-o { background: rgba(0,229,255,.15); color: var(--ac); }
+.badge-c { background: rgba(0,255,136,.15); color: var(--gr); }
+
+/* TABS */
+.tabs {
+  display: flex; background: var(--s1);
+  border-bottom: 1px solid var(--bd); flex-shrink: 0;
+  overflow-x: auto; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 1; min-width: 70px; padding: 10px 4px;
+  border: none; background: transparent; color: var(--tx2);
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all .2s; white-space: nowrap; text-align: center;
+}
+.tab.act { color: var(--ac); border-bottom-color: var(--ac); }
+
+/* SCROLL AREA */
+.scroll { flex: 1; overflow-y: auto; padding: 14px; -webkit-overflow-scrolling: touch; }
+
+/* CARD */
+.card { background: var(--s1); border: 1px solid var(--bd); border-radius: var(--r); margin-bottom: 14px; overflow: hidden; }
+.ch { padding: 11px 14px; background: var(--s2); border-bottom: 1px solid var(--bd); font-size: 11px; font-weight: 700; color: var(--ac); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; }
+.cb { padding: 14px; }
+
+/* SCAN */
+.scan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.scan-slot {
+  border: 2px dashed var(--bd); border-radius: var(--r);
+  padding: 14px 10px; text-align: center; cursor: pointer;
+  transition: all .2s; position: relative; overflow: hidden;
+}
+.scan-slot.filled { border-color: var(--gr); background: rgba(0,255,136,.05); }
+.scan-slot img { width: 100%; height: 56px; object-fit: cover; border-radius: 6px; margin-top: 8px; }
+.scan-icon { font-size: 26px; margin-bottom: 4px; }
+.scan-lbl { font-size: 10px; color: var(--tx2); text-transform: uppercase; letter-spacing: .5px; }
+.scan-ok { font-size: 11px; font-weight: 700; color: var(--gr); margin-top: 4px; }
+
+/* ANALYZE BTN */
+.analyze-btn {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, var(--ac2), var(--yw));
+  border: none; border-radius: var(--r); color: #000;
+  font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: opacity .2s;
+}
+.analyze-btn:disabled { opacity: .4; }
+
+/* FIELD */
+.fg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ff { grid-column: 1/-1; }
+.fld { margin-bottom: 0; }
+.fld label { display: block; font-size: 10px; color: var(--tx2); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; font-weight: 600; }
+.fld-wrap { position: relative; }
+.fld input, .fld textarea, .fld select {
+  width: 100%; background: var(--bg); border: 1px solid var(--bd);
+  border-radius: 8px; padding: 10px 40px 10px 12px;
+  color: var(--tx); font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; outline: none; transition: border-color .2s;
+  -webkit-appearance: none;
+}
+.fld input:focus, .fld textarea:focus { border-color: var(--ac); }
+.fld input.ai-filled { border-color: var(--gr); }
+.fld textarea { padding-right: 40px; resize: none; min-height: 75px; }
+.mic {
+  position: absolute; right: 8px; top: 8px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--s2); border: 1px solid var(--bd);
+  color: var(--tx2); font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.mic.rec { background: var(--rd); border-color: var(--rd); color: #fff; animation: pulse .8s infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,59,92,.5)} 50%{box-shadow:0 0 0 8px rgba(255,59,92,0)} }
+
+/* VOICE BOX */
+.vbox { background: var(--s1); border: 1px solid var(--bd); border-radius: var(--r); padding: 14px; margin-bottom: 14px; }
+.vbox-title { font-size: 11px; font-weight: 700; color: var(--ac); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.vbig {
+  width: 100%; padding: 14px; border: 2px solid var(--ac);
+  background: transparent; border-radius: var(--r);
+  color: var(--ac); font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all .2s;
+}
+.vbig.rec { background: var(--rd); border-color: var(--rd); color: #fff; animation: pulse 1s infinite; }
+.vout {
+  margin-top: 10px; background: var(--bg); border: 1px solid var(--bd);
+  border-radius: 8px; padding: 11px; font-size: 13px;
+  color: var(--tx2); min-height: 52px; line-height: 1.6;
+}
+.vout.has { color: var(--tx); }
+.ai-fill { display: none; width: 100%; margin-top: 10px; padding: 10px; background: rgba(0,229,255,.1); border: 1px solid var(--ac); border-radius: 8px; color: var(--ac); font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+/* TABLE */
+.tbl { width: 100%; border-collapse: collapse; }
+.tbl th { text-align: left; font-size: 10px; color: var(--tx2); text-transform: uppercase; padding: 7px 5px; border-bottom: 1px solid var(--bd); font-weight: 600; }
+.tbl td { padding: 5px; border-bottom: 1px solid var(--bd); font-size: 12px; vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: none; }
+.ti { background: var(--bg); border: 1px solid transparent; border-radius: 6px; padding: 6px 7px; color: var(--tx); font-family: 'JetBrains Mono', monospace; font-size: 12px; width: 100%; outline: none; }
+.ti:focus { border-color: var(--ac); }
+.db { background: none; border: none; color: var(--rd); cursor: pointer; font-size: 16px; padding: 2px 5px; }
+.add-row { width: 100%; padding: 9px; background: transparent; border: 1px dashed var(--bd); border-radius: 8px; color: var(--tx2); font-family: 'JetBrains Mono', monospace; font-size: 12px; cursor: pointer; margin-top: 8px; transition: all .2s; }
+.add-row:active { border-color: var(--ac); color: var(--ac); }
+
+/* PHOTOS */
+.pgrid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.pcell { aspect-ratio: 1; background: var(--bg); border: 1px dashed var(--bd); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; }
+.pcell img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+.plbl { font-size: 9px; color: var(--tx2); z-index: 1; }
+
+/* AI CHAT */
+.ai-msgs { background: var(--bg); border: 1px solid var(--bd); border-radius: var(--r); padding: 12px; min-height: 200px; max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+.amsg { max-width: 88%; padding: 10px 13px; border-radius: 12px; font-size: 13px; line-height: 1.5; }
+.amsg.u { background: rgba(0,229,255,.12); border: 1px solid rgba(0,229,255,.25); align-self: flex-end; }
+.amsg.a { background: var(--s2); border: 1px solid var(--bd); align-self: flex-start; }
+.ai-inp-row { display: flex; gap: 8px; }
+.ai-inp { flex: 1; background: var(--s2); border: 1px solid var(--bd); border-radius: 8px; padding: 10px 12px; color: var(--tx); font-family: 'JetBrains Mono', monospace; font-size: 13px; outline: none; }
+.ai-inp:focus { border-color: var(--ac); }
+.ai-qbtns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+
+/* TOTAL */
+.totbl { background: var(--s2); border-radius: var(--r); padding: 14px; margin-bottom: 14px; }
+.trow { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; }
+.trow.main { border-top: 1px solid var(--bd); margin-top: 8px; padding-top: 11px; font-size: 22px; font-weight: 700; color: var(--ac); }
+
+/* HISTORY */
+.hist-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--bd); cursor: pointer; }
+.hist-row:last-child { border-bottom: none; }
+.hist-row:active { background: var(--s2); }
+
+/* BUTTONS */
+.btnrow { display: flex; gap: 10px; }
+.btn { padding: 11px 18px; border-radius: var(--r); border: none; font-family: 'Unbounded', sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+.btn:active { opacity: .8; }
+.btn-pr { background: var(--ac); color: #000; }
+.btn-sc { background: var(--s2); color: var(--tx); border: 1px solid var(--bd); }
+.btn-ok { background: var(--gr); color: #000; }
+.btn-rd { background: var(--rd); color: #fff; }
+
+/* NOTIF */
+#notif { position: fixed; bottom: calc(20px + var(--safe-bot)); left: 50%; transform: translateX(-50%); padding: 11px 22px; border-radius: 30px; font-weight: 700; font-size: 13px; z-index: 999; display: none; white-space: nowrap; max-width: 90vw; box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+
+/* SCAN STATUS */
+.smsg { font-size: 12px; margin-top: 8px; text-align: center; }
+
+/* AI STATUS */
+.aist { display: flex; align-items: center; gap: 7px; margin-top: 10px; font-size: 11px; color: var(--tx2); }
+.aidot { width: 7px; height: 7px; border-radius: 50%; background: var(--gr); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.spin { display: inline-block; animation: sp .7s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg); } }
+
+.sumcard { background: var(--bg); border-left: 3px solid var(--ac); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+.sumcard h4 { font-size: 10px; color: var(--ac); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 7px; font-weight: 700; }
+.sumcard p { font-size: 13px; line-height: 1.7; color: var(--tx2); }
+
+input[type=file] { display: none; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">СТО<span>.</span>AI</div>
+  <div class="hdr-right">
+    <div class="narid" id="narid">#—</div>
+    <span class="badge badge-o" id="sbadge">ВІДКРИТО</span>
+    <button class="btn btn-sc" style="padding:8px 12px;font-size:10px" onclick="newOrder()">+ Новий</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab act" onclick="switchTab(0,this)">📋 Приймання</button>
+  <button class="tab" onclick="switchTab(1,this)">🔧 Роботи</button>
+  <button class="tab" onclick="switchTab(2,this)">🔩 Запчастини</button>
+  <button class="tab" onclick="switchTab(3,this)">🤖 ІІ</button>
+  <button class="tab" onclick="switchTab(4,this)">💰 Підсумок</button>
+  <button class="tab" onclick="switchTab(5,this)">📚 Історія</button>
+</div>
+
+<!-- SCROLL -->
+<div class="scroll" id="scroll">
+
+<!-- ===== TAB 0: ПРИЙМАННЯ ===== -->
+<div id="t0">
+
+  <!-- SCAN -->
+  <div class="card">
+    <div class="ch">📄 Сканування техпаспорту</div>
+    <div class="cb">
+      <div class="scan-grid">
+        <div class="scan-slot" id="ss1" onclick="document.getElementById('si1').click()">
+          <input type="file" id="si1" accept="image/*" capture="environment" onchange="loadScan(1,this)">
+          <div class="scan-icon" id="sic1">📷</div>
+          <div class="scan-lbl">Сторона 1</div>
+          <div class="scan-ok" id="sok1" style="display:none">✓ Завантажено</div>
+          <img id="spv1" style="display:none">
+        </div>
+        <div class="scan-slot" id="ss2" onclick="document.getElementById('si2').click()">
+          <input type="file" id="si2" accept="image/*" capture="environment" onchange="loadScan(2,this)">
+          <div class="scan-icon" id="sic2">📷</div>
+          <div class="scan-lbl">Сторона 2</div>
+          <div class="scan-ok" id="sok2" style="display:none">✓ Завантажено</div>
+          <img id="spv2" style="display:none">
+        </div>
+      </div>
+      <button class="analyze-btn" id="abtn" onclick="analyzeScan()" disabled>✨ Розпізнати та заповнити поля</button>
+      <div class="smsg" id="smsg"></div>
+    </div>
+  </div>
+
+  <!-- VOICE -->
+  <div class="vbox">
+    <div class="vbox-title">🎤 Голосовий ввід скарг</div>
+    <button class="vbig" id="vbig" onclick="toggleMasterVoice()">
+      <span>🎙️</span><span id="vbigt">Натисніть і говоріть</span>
+    </button>
+    <div class="vout" id="vout">Натисніть і опишіть скарги клієнта...</div>
+    <button class="ai-fill" id="aifill" onclick="aiFillSkargy()">✨ Заповнити через ІІ</button>
+    <div class="aist"><div class="aidot"></div>ІІ готовий до роботи</div>
+  </div>
+
+  <!-- АВТО -->
+  <div class="card">
+    <div class="ch">🚗 Дані автомобіля</div>
+    <div class="cb">
+      <div class="fg">
+        <div class="fld ff"><label>Марка / Модель</label>
+          <div class="fld-wrap"><input type="text" id="f_auto" placeholder="BMW X5" oninput="dirty=true">
+          <button class="mic" onclick="voiceField('f_auto')">🎤</button></div></div>
+        <div class="fld"><label>Держ. номер</label>
+          <div class="fld-wrap"><input type="text" id="f_gosnomer" placeholder="BA3000AK" oninput="dirty=true">
+          <button class="mic" onclick="voiceField('f_gosnomer')">🎤</button></div></div>
+        <div class="fld"><label>Рік</label>
+          <div class="fld-wrap"><input type="text" id="f_year" placeholder="2015" oninput="dirty=true">
+          <button class="mic" onclick="voiceField('f_year')">🎤</button></div></div>
+        <div class="fld ff"><label>VIN / Номер кузова</label>
+          <div class="fld-wrap"><input type="text" id="f_vin" placeholder="WBAFF41030L001363" oninput="dirty=true">
+          <button class="mic" onclick="voiceField('f_vin')">🎤</button></div></div>
+        <div class="fld"><label>Пробіг, км</label>
+          <div class="fld-wrap"><input type="text" id="f_probig" placeholder="120000" oninput="dirty=true">
+          <button class="mic" onclick="voiceField('f_probig')">🎤</button></div></div>
+        <div class="fld"><label>Колір</label>
+          <div class="fld-wrap"><input type="text" id="f_color" placeholder="Чорний" oninput="dirty=true">
+          <button class="mic" onclick="voiceField('f_color')">🎤</button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- КЛІЄНТ -->
+  <div class="card">
+    <div class="ch">👤 Клієнт</div>
+    <div class="cb">
+      <div class="fg">
+        <div class="fld ff"><label>ПІБ клієнта</label>
+          <div class="fld-wrap"><input type="text" id="f_client" placeholder="Іван Петренко" oninput="dirty=true">
+          <button class="mic" onclick="voiceField('f_client')">🎤</button></div></div>
+        <div class="fld"><label>Телефон</label>
+          <div class="fld-wrap"><input type="tel" id="f_phone" placeholder="0991234567" oninput="dirty=true">
+          <button class="mic" onclick="voiceField('f_phone')">🎤</button></div></div>
+        <div class="fld"><label>Місто</label>
+          <div class="fld-wrap"><input type="text" id="f_city" placeholder="Кропивницький" oninput="dirty=true">
+          <button class="mic" onclick="voiceField('f_city')">🎤</button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- СКАРГИ -->
+  <div class="card">
+    <div class="ch">⚠️ Скарги клієнта
+      <button class="btn btn-sc" style="padding:5px 10px;font-size:10px" onclick="aiSuggestWorks()">✨ ІІ → Роботи</button>
+    </div>
+    <div class="cb">
+      <div class="fld">
+        <div class="fld-wrap">
+          <textarea id="f_skargy" placeholder="Клієнт скаржиться на..." oninput="dirty=true"></textarea>
+          <button class="mic" style="top:10px" onclick="voiceField('f_skargy')">🎤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ФОТО -->
+  <div class="card">
+    <div class="ch">📷 Фотофіксація авто</div>
+    <div class="cb">
+      <div class="pgrid" id="pgrid"></div>
+      <input type="file" id="photoinput" accept="image/*" capture="environment" onchange="addPhoto(this)">
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="btn btn-pr" onclick="saveOrder()">💾 Зберегти</button>
+    <button class="btn btn-sc" onclick="switchTab(1,document.querySelectorAll('.tab')[1])">Роботи →</button>
+  </div>
+</div>
+
+<!-- ===== TAB 1: РОБОТИ ===== -->
+<div id="t1" style="display:none">
+  <div class="card">
+    <div class="ch">🔧 Перелік робіт</div>
+    <div class="cb">
+      <div style="overflow-x:auto">
+        <table class="tbl">
+          <thead><tr><th style="width:30px">#</th><th>Назва роботи</th><th style="width:55px">К-сть</th><th style="width:85px">Сума,грн</th><th style="width:30px"></th></tr></thead>
+          <tbody id="wtbody"></tbody>
+        </table>
+      </div>
+      <button class="add-row" onclick="addWork()">+ Додати роботу</button>
+    </div>
+  </div>
+  <div class="btnrow">
+    <button class="btn btn-pr" onclick="saveOrder()">💾 Зберегти</button>
+    <button class="btn btn-sc" onclick="switchTab(2,document.querySelectorAll('.tab')[2])">Запчастини →</button>
+  </div>
+</div>
+
+<!-- ===== TAB 2: ЗАПЧАСТИНИ ===== -->
+<div id="t2" style="display:none">
+  <div class="card">
+    <div class="ch">🔩 Запчастини та матеріали
+      <button class="btn btn-sc" style="padding:5px 10px;font-size:10px" onclick="aiSuggestParts()">✨ ІІ підбере</button>
+    </div>
+    <div class="cb">
+      <div style="overflow-x:auto">
+        <table class="tbl">
+          <thead><tr><th style="width:30px">#</th><th style="width:85px">Кат.№</th><th>Назва</th><th style="width:42px">К-сть</th><th style="width:70px">Ціна</th><th style="width:70px">Сума</th><th style="width:30px"></th></tr></thead>
+          <tbody id="ptbody"></tbody>
+        </table>
+      </div>
+      <button class="add-row" onclick="addPart()">+ Додати запчастину</button>
+    </div>
+  </div>
+  <div class="btnrow">
+    <button class="btn btn-pr" onclick="saveOrder()">💾 Зберегти</button>
+    <button class="btn btn-sc" onclick="switchTab(4,document.querySelectorAll('.tab')[4])">Підсумок →</button>
+  </div>
+</div>
+
+<!-- ===== TAB 3: ІІ АСИСТЕНТ ===== -->
+<div id="t3" style="display:none">
+  <div class="card" style="margin-bottom:10px">
+    <div class="ch">🤖 ІІ Асистент — діагностика та підбір запчастин</div>
+  </div>
+  <div class="ai-qbtns">
+    <button class="btn btn-sc" style="font-size:10px;padding:7px 10px" onclick="quickAsk('Типові проблеми для '+getAuto())">⚠️ Типові проблеми</button>
+    <button class="btn btn-sc" style="font-size:10px;padding:7px 10px" onclick="quickAsk('Підбери запчастини для: '+getWorks())">🔩 Запчастини</button>
+    <button class="btn btn-sc" style="font-size:10px;padding:7px 10px" onclick="quickAsk('Діагностика: '+getSkargy())">🔧 Діагностика</button>
+    <button class="btn btn-sc" style="font-size:10px;padding:7px 10px" onclick="quickAsk('Регламент для '+getAuto()+' пробіг '+getProbig()+' км')">📋 Регламент</button>
+  </div>
+  <div class="ai-msgs" id="aimsgs">
+    <div class="amsg a">Вітаю! Я ІІ асистент СТО. Можу допомогти з:<br><br>🔧 <b>Діагностикою</b> — опишіть симптоми<br>📖 <b>Мануалами</b> — процедури ремонту<br>🔩 <b>Запчастинами</b> — артикули та аналоги<br>💡 <b>Типовими проблемами</b> моделі</div>
+  </div>
+  <div class="ai-inp-row">
+    <input class="ai-inp" id="aiinp" placeholder="Задайте питання..." onkeydown="if(event.key==='Enter')sendAI()">
+    <button class="btn btn-pr" onclick="sendAI()">→</button>
+  </div>
+</div>
+
+<!-- ===== TAB 4: ПІДСУМОК ===== -->
+<div id="t4" style="display:none">
+  <div class="totbl">
+    <div class="trow"><span style="color:var(--tx2)">Роботи:</span><span id="tw">0 грн</span></div>
+    <div class="trow"><span style="color:var(--tx2)">Запчастини:</span><span id="tp">0 грн</span></div>
+    <div class="trow main"><span>До оплати:</span><span id="tt">0 грн</span></div>
+  </div>
+  <div id="sumcards"></div>
+  <div class="btnrow" style="flex-wrap:wrap;gap:8px">
+    <button class="btn btn-pr" onclick="saveOrder()">💾 Зберегти</button>
+    <button class="btn btn-ok" onclick="closeOrder()">✓ Закрити наряд</button>
+    <button class="btn btn-sc" onclick="window.print()">🖨 Друк</button>
+  </div>
+</div>
+
+<!-- ===== TAB 5: ІСТОРІЯ ===== -->
+<div id="t5" style="display:none">
+  <div class="card">
+    <div class="ch">📚 Всі наряди</div>
+    <div style="padding:10px 14px;border-bottom:1px solid var(--bd)">
+      <input type="text" id="hsearch" placeholder="Пошук..." style="width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none" oninput="renderHistory()">
+    </div>
+    <div id="hlist"></div>
+  </div>
+</div>
+
+</div><!-- /scroll -->
+
+<div id="notif"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let S = {
+  orders: JSON.parse(localStorage.getItem('sto_orders') || '[]'),
+  current: null,
+  works: [],
+  parts: [],
+  photos: [],
+  scans: {},
+  dirty: false,
+  masterRec: null,
+  masterRecording: false,
+  fieldRec: null,
+  activeField: null,
+  aiHistory: [],
+  naridCounter: parseInt(localStorage.getItem('sto_counter') || '400')
+};
+
+let dirty = false;
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload = () => {
+  renderPhotos();
+  const last = S.orders[S.orders.length - 1];
+  if (last && last.status === 'open') {
+    loadOrder(last.num);
+  } else {
+    newOrder();
+  }
+  renderHistory();
+};
+
+// ============================================================
+// ORDER MANAGEMENT
+// ============================================================
+function newOrder() {
+  S.naridCounter++;
+  localStorage.setItem('sto_counter', S.naridCounter);
+  const num = 'НР-' + String(S.naridCounter).padStart(4,'0');
+  S.current = { num, status: 'open', created: new Date().toISOString() };
+  S.works = [{ name:'', qty:1, sum:'' }];
+  S.parts = [{ cat:'', name:'', qty:1, price:'' }];
+  S.photos = [];
+  S.scans = {};
+  dirty = false;
+  clearForm();
+  renderWorks();
+  renderParts();
+  renderPhotos();
+  clearScans();
+  document.getElementById('narid').textContent = '#' + S.naridCounter;
+  document.getElementById('sbadge').textContent = 'ВІДКРИТО';
+  document.getElementById('sbadge').className = 'badge badge-o';
+  showNotif('Новий наряд ' + num, 'ac');
+}
+
+function saveOrder() {
+  const d = getForm();
+  const wt = S.works.reduce((s,w) => s+(+w.sum||0), 0);
+  const pt = S.parts.reduce((s,p) => s+(+p.qty||1)*(+p.price||0), 0);
+  const order = {
+    ...S.current, ...d,
+    works: [...S.works],
+    parts: [...S.parts],
+    wTotal: wt, pTotal: pt, total: wt+pt,
+    updated: new Date().toISOString()
+  };
+  const idx = S.orders.findIndex(o => o.num === S.current.num);
+  if (idx >= 0) S.orders[idx] = order;
+  else S.orders.push(order);
+  S.current = order;
+  localStorage.setItem('sto_orders', JSON.stringify(S.orders));
+  dirty = false;
+  showNotif('Збережено ✓', 'gr');
+  renderHistory();
+}
+
+function closeOrder() {
+  saveOrder();
+  S.current.status = 'closed';
+  S.current.closed = new Date().toISOString();
+  saveOrder();
+  document.getElementById('sbadge').textContent = 'ЗАКРИТО';
+  document.getElementById('sbadge').className = 'badge badge-c';
+  showNotif('Наряд закрито ✓', 'gr');
+}
+
+function loadOrder(num) {
+  const o = S.orders.find(x => x.num === num);
+  if (!o) return;
+  S.current = { ...o };
+  S.works = o.works || [{ name:'', qty:1, sum:'' }];
+  S.parts = o.parts || [{ cat:'', name:'', qty:1, price:'' }];
+  S.photos = [];
+  fillForm(o);
+  renderWorks();
+  renderParts();
+  renderPhotos();
+  document.getElementById('narid').textContent = '#' + num.replace('НР-','');
+  document.getElementById('sbadge').textContent = o.status === 'open' ? 'ВІДКРИТО' : 'ЗАКРИТО';
+  document.getElementById('sbadge').className = 'badge ' + (o.status === 'open' ? 'badge-o' : 'badge-c');
+  switchTab(0, document.querySelectorAll('.tab')[0]);
+}
+
+// ============================================================
+// FORM
+// ============================================================
+const FIELDS = ['auto','gosnomer','vin','year','probig','color','client','phone','city','skargy'];
+function getForm() {
+  const d = {};
+  FIELDS.forEach(k => { const el = document.getElementById('f_'+k); if(el) d[k] = el.value; });
+  return d;
+}
+function fillForm(d) {
+  FIELDS.forEach(k => { const el = document.getElementById('f_'+k); if(el) el.value = d[k]||''; });
+}
+function clearForm() {
+  FIELDS.forEach(k => { const el = document.getElementById('f_'+k); if(el) el.value = ''; });
+}
+
+// ============================================================
+// SCAN
+// ============================================================
+function loadScan(side, input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img2 = new Image();
+    img2.onload = () => {
+      const maxW = 1200;
+      const scale = Math.min(1, maxW/Math.max(img2.width,img2.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img2.width*scale);
+      canvas.height = Math.round(img2.height*scale);
+      canvas.getContext('2d').drawImage(img2,0,0,canvas.width,canvas.height);
+      const compressed = canvas.toDataURL('image/jpeg', 0.8);
+      S.scans[side] = { base64: compressed.split(',')[1], type:'image/jpeg', preview: compressed };
+      document.getElementById('ss'+side).classList.add('filled');
+      document.getElementById('sic'+side).textContent = '✅';
+      document.getElementById('sok'+side).style.display = 'block';
+      const pv = document.getElementById('spv'+side);
+      pv.src = compressed; pv.style.display = 'block';
+      document.getElementById('abtn').disabled = false;
+      showNotif('Фото '+ side +' завантажено', 'ac');
+    };
+    img2.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function clearScans() {
+  S.scans = {};
+  [1,2].forEach(s => {
+    document.getElementById('ss'+s).classList.remove('filled');
+    document.getElementById('sic'+s).textContent = '📷';
+    document.getElementById('sok'+s).style.display = 'none';
+    document.getElementById('spv'+s).style.display = 'none';
+    document.getElementById('si'+s).value = '';
+  });
+  document.getElementById('abtn').disabled = true;
+  document.getElementById('smsg').textContent = '';
+}
+
+async function analyzeScan() {
+  const btn = document.getElementById('abtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin">⟳</span> Аналізую...';
+  document.getElementById('smsg').textContent = 'ІІ розпізнає техпаспорт...';
+  document.getElementById('smsg').style.color = 'var(--tx2)';
+
+  try {
+    const content = [];
+    [1,2].forEach(s => {
+      if (S.scans[s]) {
+        content.push({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data:S.scans[s].base64 } });
+        content.push({ type:'text', text: s===1 ? 'Це ПЕРША сторона технічного паспорту (свідоцтво про реєстрацію ТЗ України).' : 'Це ДРУГА сторона технічного паспорту.' });
+      }
+    });
+    content.push({ type:'text', text:'Прочитай всі дані та поверни ТІЛЬКИ JSON без тексту:\n{"auto":"марка модель","gosnomer":"держномер","vin":"VIN","year":"рік","color":"колір","client":"ПІБ власника","city":"місто"}\nЯкщо поля немає — порожній рядок.' });
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-opus-4-5', max_tokens:600, messages:[{role:'user',content}] })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const raw = data.content[0].text;
+    const match = raw.match(/\{[\s\S]*?\}/);
+    if (!match) throw new Error('Не вдалося знайти дані');
+    const parsed = JSON.parse(match[0]);
+    let filled = 0;
+    Object.entries(parsed).forEach(([k,v]) => {
+      const el = document.getElementById('f_'+k);
+      if (el && v) {
+        el.value = v; el.classList.add('ai-filled');
+        setTimeout(() => el.classList.remove('ai-filled'), 3000);
+        filled++;
+      }
+    });
+    document.getElementById('smsg').textContent = '✅ Розпізнано ' + filled + ' полів!';
+    document.getElementById('smsg').style.color = 'var(--gr)';
+    showNotif('✅ Заповнено ' + filled + ' полів', 'gr');
+    dirty = true;
+  } catch(e) {
+    document.getElementById('smsg').textContent = '⚠️ ' + e.message;
+    document.getElementById('smsg').style.color = 'var(--rd)';
+    showNotif('❌ ' + e.message, 'rd');
+  }
+  btn.disabled = false;
+  btn.textContent = '✨ Розпізнати та заповнити поля';
+}
+
+// ============================================================
+// VOICE
+// ============================================================
+function voiceField(id) {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showNotif('⚠️ Голос не підтримується тут', 'rd'); return;
+  }
+  const btn = document.querySelector(`button[onclick="voiceField('${id}')"]`);
+  if (S.activeField === id && S.fieldRec) {
+    S.fieldRec.stop(); S.activeField = null;
+    if(btn){btn.classList.remove('rec');btn.textContent='🎤';}
+    return;
+  }
+  if (S.fieldRec) S.fieldRec.stop();
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SR();
+  rec.lang = 'uk-UA'; rec.continuous = false; rec.interimResults = false;
+  rec.onresult = e => {
+    const t = e.results[0][0].transcript;
+    document.getElementById(id).value = t;
+    showNotif('✅ ' + t, 'gr');
+    S.activeField = null; S.fieldRec = null;
+    if(btn){btn.classList.remove('rec');btn.textContent='🎤';}
+    dirty = true;
+  };
+  rec.onerror = rec.onend = () => {
+    S.activeField = null; S.fieldRec = null;
+    if(btn){btn.classList.remove('rec');btn.textContent='🎤';}
+  };
+  rec.start(); S.fieldRec = rec; S.activeField = id;
+  if(btn){btn.classList.add('rec');btn.textContent='⏹';}
+}
+
+function toggleMasterVoice() {
+  if (S.masterRecording) {
+    if(S.masterRec) S.masterRec.stop();
+    S.masterRecording = false;
+    document.getElementById('vbig').classList.remove('rec');
+    document.getElementById('vbigt').textContent = 'Натисніть і говоріть';
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showNotif('⚠️ Голос не підтримується', 'rd'); return; }
+  const rec = new SR();
+  rec.lang = 'uk-UA'; rec.continuous = true; rec.interimResults = true;
+  rec.onresult = e => {
+    let t = '';
+    for(let i=e.resultIndex;i<e.results.length;i++) t += e.results[i][0].transcript;
+    const vout = document.getElementById('vout');
+    vout.textContent = t; vout.classList.add('has');
+    document.getElementById('aifill').style.display = 'flex';
+  };
+  rec.onerror = () => { S.masterRecording = false; document.getElementById('vbig').classList.remove('rec'); };
+  rec.start(); S.masterRec = rec; S.masterRecording = true;
+  document.getElementById('vbig').classList.add('rec');
+  document.getElementById('vbigt').textContent = 'Запис... Натисніть для зупинки';
+}
+
+async function aiFillSkargy() {
+  const text = document.getElementById('vout').textContent;
+  if (!text || text.includes('Натисніть')) return;
+  showNotif('⏳ ІІ аналізує...', 'ac');
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-opus-4-5', max_tokens:600,
+        messages:[{role:'user',content:`Майстер-приймальник СТО. З тексту скарг поверни ТІЛЬКИ JSON:\n{"skargy":"опис","roboty":["робота1","робота2"]}\nТекст: "${text}"`}]
+      })
+    });
+    const data = await res.json();
+    const parsed = JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+    if (parsed.skargy) document.getElementById('f_skargy').value = parsed.skargy;
+    if (parsed.roboty?.length) {
+      parsed.roboty.forEach(r => addWork(r));
+      showNotif('✅ ІІ додав ' + parsed.roboty.length + ' роботи', 'gr');
+      setTimeout(() => switchTab(1,document.querySelectorAll('.tab')[1]), 1200);
+    } else showNotif('✅ Скарги збережено', 'gr');
+    dirty = true;
+  } catch { document.getElementById('f_skargy').value = text; showNotif('✅ Збережено', 'gr'); dirty=true; }
+}
+
+// ============================================================
+// WORKS TABLE
+// ============================================================
+function renderWorks() {
+  document.getElementById('wtbody').innerHTML = S.works.map((w,i) => `
+    <tr>
+      <td style="color:var(--tx2);font-size:10px">${i+1}</td>
+      <td><input class="ti" value="${esc(w.name)}" placeholder="Назва роботи" onchange="S.works[${i}].name=this.value;dirty=true"></td>
+      <td><input class="ti" type="number" value="${w.qty}" style="width:48px" onchange="S.works[${i}].qty=+this.value;dirty=true"></td>
+      <td><input class="ti" type="number" value="${w.sum}" placeholder="0" style="width:78px" onchange="S.works[${i}].sum=+this.value;dirty=true"></td>
+      <td><button class="db" onclick="S.works.splice(${i},1);renderWorks()">✕</button></td>
+    </tr>`).join('');
+}
+function addWork(name='') { S.works.push({name,qty:1,sum:''}); renderWorks(); dirty=true; }
+
+// ============================================================
+// PARTS TABLE
+// ============================================================
+function renderParts() {
+  document.getElementById('ptbody').innerHTML = S.parts.map((p,i) => `
+    <tr>
+      <td style="color:var(--tx2);font-size:10px">${i+1}</td>
+      <td><input class="ti" value="${esc(p.cat)}" placeholder="Арт." style="width:78px" onchange="S.parts[${i}].cat=this.value;dirty=true"></td>
+      <td><input class="ti" value="${esc(p.name)}" placeholder="Назва" onchange="S.parts[${i}].name=this.value;dirty=true"></td>
+      <td><input class="ti" type="number" value="${p.qty}" style="width:40px" onchange="S.parts[${i}].qty=+this.value;renderParts();dirty=true"></td>
+      <td><input class="ti" type="number" value="${p.price}" placeholder="0" style="width:65px" onchange="S.parts[${i}].price=+this.value;renderParts();dirty=true"></td>
+      <td style="color:var(--ac);font-size:12px">${((+p.qty||1)*(+p.price||0)).toLocaleString()}</td>
+      <td><button class="db" onclick="S.parts.splice(${i},1);renderParts()">✕</button></td>
+    </tr>`).join('');
+}
+function addPart(cat='',name='',qty=1,price='') { S.parts.push({cat,name,qty,price}); renderParts(); dirty=true; }
+
+// ============================================================
+// PHOTOS
+// ============================================================
+const PLBLS = ['Перед','Зад','Ліво','Право','VIN','+Фото'];
+function renderPhotos() {
+  const grid = document.getElementById('pgrid');
+  grid.innerHTML = '';
+  for(let i=0;i<6;i++) {
+    const div = document.createElement('div');
+    div.className = 'pcell';
+    div.onclick = () => document.getElementById('photoinput').click();
+    if (S.photos[i]) {
+      const img = document.createElement('img');
+      img.src = S.photos[i];
+      div.appendChild(img);
+      const lbl = document.createElement('div');
+      lbl.className = 'plbl';
+      lbl.style.cssText = 'background:rgba(0,0,0,.65);padding:2px 5px;border-radius:4px;color:#fff';
+      lbl.textContent = PLBLS[i]||'Фото';
+      div.appendChild(lbl);
+    } else {
+      div.innerHTML = `<span style="font-size:22px">📷</span><span class="plbl">${PLBLS[i]||'Фото'}</span>`;
+    }
+    grid.appendChild(div);
+  }
+}
+function addPhoto(input) {
+  const file = input.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = e => { S.photos.push(e.target.result); renderPhotos(); };
+  r.readAsDataURL(file); input.value='';
+}
+
+// ============================================================
+// AI ASSISTANT
+// ============================================================
+function getAuto() { return document.getElementById('f_auto').value||'авто невідомо'; }
+function getSkargy() { return document.getElementById('f_skargy').value||'скарги не вказані'; }
+function getProbig() { return document.getElementById('f_probig').value||'?'; }
+function getWorks() { return S.works.filter(w=>w.name).map(w=>w.name).join(', ')||'не вказані'; }
+
+async function sendAI() {
+  const inp = document.getElementById('aiinp');
+  const text = inp.value.trim(); if(!text) return;
+  inp.value = '';
+  addMsg(text,'u');
+  S.aiHistory.push({role:'user',content:text});
+  await callAI();
+}
+
+async function quickAsk(text) {
+  switchTab(3,document.querySelectorAll('.tab')[3]);
+  addMsg(text,'u');
+  S.aiHistory.push({role:'user',content:text});
+  await callAI();
+}
+
+async function callAI() {
+  const thinking = addMsg('⏳ Аналізую...','a');
+  const f = getForm();
+  const sys = `Ти досвідчений майстер-приймальник та технічний консультант автосервісу в Кропивницькому.
+Авто: ${f.auto||'?'}, рік: ${f.year||'?'}, пробіг: ${f.probig||'?'} км, VIN: ${f.vin||'?'}.
+Скарги: ${f.skargy||'не вказані'}. Роботи: ${getWorks()}.
+Відповідай конкретно і практично. При пропозиції запчастин вказуй артикули.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-opus-4-5', max_tokens:1200, system:sys, messages:S.aiHistory.slice(-8) })
+    });
+    const data = await res.json();
+    thinking.remove();
+    if(data.error) throw new Error(data.error.message);
+    const reply = data.content[0].text;
+    addMsg(reply,'a');
+    S.aiHistory.push({role:'assistant',content:reply});
+  } catch(e) {
+    thinking.remove();
+    addMsg('❌ Помилка: '+e.message,'a');
+  }
+}
+
+function addMsg(text,role) {
+  const c = document.getElementById('aimsgs');
+  const div = document.createElement('div');
+  div.className = 'amsg '+role;
+  div.innerHTML = text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>');
+  c.appendChild(div);
+  c.scrollTop = c.scrollHeight;
+  return div;
+}
+
+async function aiSuggestWorks() {
+  const s = document.getElementById('f_skargy').value;
+  if(!s){showNotif('Введіть скарги клієнта','rd');return;}
+  showNotif('⏳ ІІ підбирає роботи...','ac');
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-opus-4-5', max_tokens:400,
+        messages:[{role:'user',content:`Авто: ${getAuto()}. Скарги: ${s}. Запропонуй 3-5 робіт. JSON: {"roboty":["робота1","робота2"]}`}]
+      })
+    });
+    const data = await res.json();
+    const parsed = JSON.parse(data.content[0].text.match(/\{[\s\S]*?\}/)[0]);
+    parsed.roboty?.forEach(r=>addWork(r));
+    showNotif('✅ ІІ додав '+parsed.roboty.length+' робіт','gr');
+    switchTab(1,document.querySelectorAll('.tab')[1]);
+  } catch(e){showNotif('❌ '+e.message,'rd');}
+}
+
+async function aiSuggestParts() {
+  const w = getWorks();
+  if(w==='не вказані'){showNotif('Спочатку введіть роботи','rd');return;}
+  showNotif('⏳ ІІ підбирає запчастини...','ac');
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-opus-4-5', max_tokens:600,
+        messages:[{role:'user',content:`Авто: ${getAuto()}, VIN: ${document.getElementById('f_vin').value||'?'}. Роботи: ${w}. Підбери запчастини. JSON: {"parts":[{"cat":"арт","name":"назва","qty":1,"price":0}]}`}]
+      })
+    });
+    const data = await res.json();
+    const match = data.content[0].text.match(/\{[\s\S]*\}/);
+    const parsed = JSON.parse(match[0]);
+    parsed.parts?.forEach(p=>addPart(p.cat||'',p.name,p.qty||1,p.price||''));
+    showNotif('✅ ІІ підібрав '+parsed.parts.length+' запчастин','gr');
+  } catch(e){showNotif('❌ '+e.message,'rd');}
+}
+
+// ============================================================
+// TOTALS & SUMMARY
+// ============================================================
+function updateTotals() {
+  const wt = S.works.reduce((s,w)=>s+(+w.sum||0),0);
+  const pt = S.parts.reduce((s,p)=>s+(+p.qty||1)*(+p.price||0),0);
+  document.getElementById('tw').textContent = wt.toLocaleString()+' грн';
+  document.getElementById('tp').textContent = pt.toLocaleString()+' грн';
+  document.getElementById('tt').textContent = (wt+pt).toLocaleString()+' грн';
+  const f = getForm();
+  const wl = S.works.filter(w=>w.name);
+  const pl = S.parts.filter(p=>p.name);
+  document.getElementById('sumcards').innerHTML = `
+    <div class="sumcard"><h4>🚗 Автомобіль</h4><p><b style="color:var(--tx)">${f.auto||'—'}</b> / ${f.gosnomer||'—'}<br>VIN: ${f.vin||'—'}<br>Рік: ${f.year||'—'}, Пробіг: ${f.probig||'—'} км, Колір: ${f.color||'—'}</p></div>
+    <div class="sumcard"><h4>👤 Клієнт</h4><p><b style="color:var(--tx)">${f.client||'—'}</b><br>${f.phone||'—'} / ${f.city||'—'}</p></div>
+    ${f.skargy?`<div class="sumcard" style="border-left-color:var(--yw)"><h4 style="color:var(--yw)">⚠️ Скарги</h4><p>${f.skargy}</p></div>`:''}
+    <div class="sumcard" style="border-left-color:var(--gr)"><h4 style="color:var(--gr)">🔧 Роботи (${wl.length})</h4><p>${wl.map(w=>'• '+w.name+' — '+(+w.sum).toLocaleString()+' грн').join('<br>')||'—'}</p></div>
+    <div class="sumcard"><h4>🔩 Запчастини (${pl.length})</h4><p>${pl.map(p=>'• '+p.name+(p.cat?' ('+p.cat+')':'')+' × '+p.qty+' = '+((+p.qty)*(+p.price)).toLocaleString()+' грн').join('<br>')||'—'}</p></div>
+  `;
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+function renderHistory() {
+  const q = (document.getElementById('hsearch')?.value||'').toLowerCase();
+  const orders = [...S.orders].reverse().filter(o =>
+    !q || o.num?.toLowerCase().includes(q) || o.auto?.toLowerCase().includes(q) || o.client?.toLowerCase().includes(q)
+  );
+  document.getElementById('hlist').innerHTML = orders.length ? orders.map(o => `
+    <div class="hist-row" onclick="loadOrder('${o.num}')">
+      <div>
+        <div style="font-weight:700;color:var(--ac);font-size:13px">${o.num}</div>
+        <div style="font-size:12px;color:var(--tx2)">${o.auto||'—'} ${o.gosnomer?'/ '+o.gosnomer:''}</div>
+        <div style="font-size:11px;color:var(--tx2)">${o.client||''}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700;color:var(--ac)">${(+o.total||0).toLocaleString()} грн</div>
+        <div style="font-size:10px;color:var(--tx2)">${(o.created||'').slice(0,10)}</div>
+        <span class="badge ${o.status==='open'?'badge-o':'badge-c'}">${o.status==='open'?'ВІДКРИТО':'ЗАКРИТО'}</span>
+      </div>
+    </div>`).join('')
+    : '<div style="padding:30px;text-align:center;color:var(--tx2)">Нарядів не знайдено</div>';
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(idx, btn) {
+  for(let i=0;i<6;i++) { document.getElementById('t'+i).style.display='none'; }
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('act'));
+  document.getElementById('t'+idx).style.display='block';
+  if(btn) btn.classList.add('act');
+  document.getElementById('scroll').scrollTop = 0;
+  if(idx===4) updateTotals();
+  if(idx===5) renderHistory();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+
+const COLORS = { ac:'var(--ac)', gr:'var(--gr)', rd:'var(--rd)', yw:'var(--yw)' };
+function showNotif(text, type='gr') {
+  const el = document.getElementById('notif');
+  el.textContent = text;
+  el.style.background = COLORS[type]||'var(--gr)';
+  el.style.color = (type==='rd'||type==='ac')?'#000':'#000';
+  if(type==='rd') el.style.color='#fff';
+  el.style.display='block';
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.style.display='none',2800);
+}
+</script>
+</body>
+</html>
